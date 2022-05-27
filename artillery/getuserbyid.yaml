@@ -1,0 +1,44 @@
+processor: "./functions.js"
+config:
+  environments:
+    develop:
+      target: "https://wordbox-gateway-9qeed9h4.uc.gateway.dev"
+      http:
+        timeout: 10
+        #pool: 10
+        extendedMetrics: true
+      payload:
+        # path is relative to the location of the test script
+        path: "userids.csv"
+        fields:
+          - "userid"      
+      phases: 
+        - name: Warm up
+          duration: 5
+          arrivalRate: 5
+        - name: Ramp to 50
+          duration: 60
+          arrivalRate: 5
+          rampTo: 10
+      ensure:
+        tresholds: 
+        - "http.response_time.p99": 150
+        conditions:
+        - expression: "http.response_time.p95 < 250 and http.request_rate > 1000"
+        p95: 2000
+        maxErrorRate: 1
+
+
+scenarios:
+  - name: "Get user by id"
+    flow:
+      - get:
+          url: "/apis/v1/user/getuserbyid/{{ userid }}"
+          headers: 
+            Accept: "application/json"
+            Authorization: "Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6IjZmOGUxY2IxNTY0MTQ2M2M2ZGYwZjMzMzk0YjAzYzkyZmNjODg5YWMiLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoiQXJyZSBDb24gTGEgUXVlIEJhcnJlIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FBVFhBSnllcXNvSElSZ1F1ejFzSjkwbWd4M2VjT1czQjUzUnRTd2Jlb2dFPXM5Ni1jIiwiaXNzIjoiaHR0cHM6Ly9zZWN1cmV0b2tlbi5nb29nbGUuY29tL3dvcmRib3hkZXYiLCJhdWQiOiJ3b3JkYm94ZGV2IiwiYXV0aF90aW1lIjoxNjUzNTg4NDYyLCJ1c2VyX2lkIjoiYjdiQWp4dFE1WmhaS0FuT3ptYnNLcnEyUTdrMSIsInN1YiI6ImI3YkFqeHRRNVpoWktBbk96bWJzS3JxMlE3azEiLCJpYXQiOjE2NTM1ODg0NjIsImV4cCI6MTY1MzU5MjA2MiwiZW1haWwiOiJhcnJlY29ubGFxdWViYXJyZTIzQGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7Imdvb2dsZS5jb20iOlsiMTA5ODE1OTY1MDUxMDI0OTUxOTQwIl0sImVtYWlsIjpbImFycmVjb25sYXF1ZWJhcnJlMjNAZ21haWwuY29tIl19LCJzaWduX2luX3Byb3ZpZGVyIjoiY3VzdG9tIn19.IFwqHSXXMX-oxJvd7-evLd8oDEELdBs4bhpIaFaabbLjtgt7xktINiDOEAFTx_20KJrInFVRDblAXTGNteRGZ8uQGbluN23BGzrea9z8VW-IoKZsTFSZC9hFLF-84UyR-s9xf32fVdWK6SFKDJOaARMV6olRvbQ-27_Zl3hLtUQV2tsRUJa6C8T8LkRIrA3OVF6qjv_a4IWZHEIToBcffDwqCiJ6eRz3V0Z0DD5Agxq4B791m6fOmjqQNTBT99DyGqkVdUqpOqM9GCi6LrEmtxtm3MrKukGnlALHKlZKE1aBlEMhDrM8g4uW1YYmCNmFPrbvc9HKEXm2xOtRJVuNDA"
+          capture:
+            json: "$.id"
+            as: "user id"
+          strict: false
+      - log: "id: => {{ user id }}"
