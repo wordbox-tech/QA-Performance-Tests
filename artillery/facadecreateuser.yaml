@@ -1,0 +1,105 @@
+config:
+  environments:
+    develop:
+      target: "https://wordbox-gateway-9qeed9h4.uc.gateway.dev"
+      processor: "functions.js"
+      http:
+        timeout: 10
+        extendedMetrics: true
+  phases:
+    - name: Warm up
+      duration: 2
+      arrivalRate: 5
+    - name: Ramp up load
+      duration: 5
+      arrivalRate: 5
+      rampTo: 10
+  ensure:
+    thresholds:
+      - "http.response_time.p99": 4000
+      - "http.response_time.p95": 2000
+    conditions:
+      - expression: "http.request_rate > 5"
+    maxErrorRate: 1
+
+before:
+    flow:
+      - log: "Get auth token"
+      - post:
+          url: "https://us-central1-wordboxdev.cloudfunctions.net/createcustomtoken"
+          json:
+            environment: "DEV"
+          capture:
+            - json: $.idToken
+              as: token
+      - log: "token => {{ token }}"
+scenarios:
+  - name: "Create user"
+    flow:
+      - post:
+          url: "/apis/v1/facadecreateuseronboarding"
+          beforeRequest: "createRandomUser"
+          headers: 
+            Accept: "application/json"
+            Authorization: "Bearer {{ token }}"
+          json:
+            user: "{{ userpayload }}"
+            unlockedinterests:
+            - id: 6e5a9e2e-9637-11e7-a34c-42010af00cf6
+              name: Family Guy
+              image: https://storage.googleapis.com/wordboximagesapp/series/FAMILY_GUY.jpg
+            - id: 6e5ae75c-9637-11e7-a34c-42010af00cf6
+              name: Modern Family
+              image: https://wordboximagesapp.storage.googleapis.com/series/modern_family.jpg
+            - id: 6e5ab928-9637-11e7-a34c-42010af00cf6
+              name: Scrubs
+              image: https://storage.googleapis.com/wordboximagesapp/series/SCRUBS.jpg
+            - id: 6e5aa3ca-9637-11e7-a34c-42010af00cf6
+              name: South Park
+              image: https://storage.googleapis.com/wordboximagesapp/series/SOUTH_PARK.jpg
+            - id: 6e5a93e6-9637-11e7-a34c-42010af00cf6
+              name: The Office
+              image: https://storage.googleapis.com/wordboximagesapp/series/THE_OFFICE.jpg
+            - id: 6e5a96db-9637-11e7-a34c-42010af00cf6
+              name: The Simpsons
+              image: https://storage.googleapis.com/wordboximagesapp/series/SIMPSONS.jpg
+            boxesinterests:
+            - id: 6e5aa151-9637-11e7-a34c-42010af00cf6
+              name: 30 Rock
+              image: https://wordboximagesapp.storage.googleapis.com/series/30_Rock.jpg
+            - id: 6e5a9ee6-9637-11e7-a34c-42010af00cf6
+              name: American Dad!
+              image: https://wordboximagesapp.storage.googleapis.com/series/american_dad.jpg
+            - id: 6e5a7c6b-9637-11e7-a34c-42010af00cf6
+              name: Bob's Burgers
+              image: https://wordboximagesapp.storage.googleapis.com/series/bobs_burgers.jpg
+            - id: 6e5b01e4-9637-11e7-a34c-42010af00cf6
+              name: Brooklyn Nine-Nine
+              image: https://storage.googleapis.com/wordboximagesapp/series/BROOKLYN_NINE_NINE.jpg
+            - id: 6e5ade96-9637-11e7-a34c-42010af00cf6
+              name: Buffy the Vampire Slayer
+              image: https://wordboximagesapp.storage.googleapis.com/series/Buffy_the_Vampire_Slayer.jpg
+            - id: 6eae7372-9637-11e7-a34c-42010af00cf6
+              name: Glee
+              image: https://wordboximagesapp.storage.googleapis.com/series/glee.jpg
+            - id: 6e5ad5ce-9637-11e7-a34c-42010af00cf6
+              name: It's Always Sunny in Philadelphia
+              image: https://wordboximagesapp.storage.googleapis.com/series/Its_Always_Sunny_in_Philadelphia.jpg
+            - id: 6e5a8cf2-9637-11e7-a34c-42010af00cf6
+              name: Parks and Recreation
+              image: https://storage.googleapis.com/wordboximagesapp/series/PARKS_AND_RECREATION.jpg
+            - id: 6e5aa574-9637-11e7-a34c-42010af00cf6
+              name: Seinfeld
+              image: https://storage.googleapis.com/wordboximagesapp/series/SEINFELD.jpg
+            - id: 6e5a9d85-9637-11e7-a34c-42010af00cf6
+              name: The Big Bang Theory
+              image: https://storage.googleapis.com/wordboximagesapp/series/THE_BIG_BANG_THEORY.jpg
+            - id: 6edbc821-9637-11e7-a34c-42010af00cf6
+              name: The Sopranos
+              image: https://storage.googleapis.com/wordboximagesapp/series/THE_SORPRANOS.jpg
+          capture:
+            json: "$"
+            as: "code"
+          strict: false  
+      - log: "code => {{ code }} "
+      
