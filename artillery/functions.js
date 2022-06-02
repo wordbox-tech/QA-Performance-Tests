@@ -1,5 +1,13 @@
 const faker = require( 'faker' );
 const moment = require('moment');
+let levelzerointerests = require('./interests.json');
+
+let unlockedInterests = [];
+for(let i=0 ; i < 6 ; i++){
+    var r = Math.floor(Math.random() * levelzerointerests.length);
+    unlockedInterests.push(levelzerointerests[r]);
+    levelzerointerests.splice(r, 1);
+}
 
 exports.createRandomUser = (req, context, events, next) => {
     var levelpercentage = (Math.floor(Math.random() * ( 9 - 1 + 1)) + 1)*10
@@ -18,4 +26,10 @@ exports.createRandomUser = (req, context, events, next) => {
     userpayload.urlphoto = faker.image.avatar();
     context.vars.userpayload = userpayload;
     return next();
+}
+
+exports.selectRandomInterests = (req, context, events, next) => {
+    context.vars.unlockedInterests = unlockedInterests;
+    context.vars.boxesInterests = levelzerointerests;
+    return next()
 }
