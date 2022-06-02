@@ -38,10 +38,10 @@ scenarios:
     flow:
       - post:
           url: "/apis/v1/facadecreateuseronboarding"
-          beforeRequest: 
+          beforeRequest:
             - "createRandomUser"
             - "selectRandomInterests"
-          headers: 
+          headers:
             Accept: "application/json"
             Authorization: "Bearer {{ token }}"
           json:
@@ -51,5 +51,5 @@ scenarios:
           capture:
             json: "$"
             as: "code"
-          strict: false  
+          strict: false
       - log: "code => {{ code }} "
