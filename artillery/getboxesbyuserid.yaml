@@ -8,7 +8,7 @@ config:
         timeout: 10
         extendedMetrics: true
       payload:
-        path: "userids.csv"
+        path: "users.csv"
         fields:
           - "userid"
   phases:
@@ -31,6 +31,7 @@ before:
     flow:
       - log: "Get auth token"
       - post:
+          name: "get_auth_token"
           url: "https://us-central1-wordboxdev.cloudfunctions.net/createcustomtoken"
           json:
             environment: "DEV"
@@ -43,6 +44,7 @@ scenarios:
   - name: "Get boxes by user id"
     flow:
       - get:
+          name: "get_boxes_by_user_id"
           url: "/apis/v1/boxes/boxesbyuser"
           qs:
             userid: "{{ userid }}"
