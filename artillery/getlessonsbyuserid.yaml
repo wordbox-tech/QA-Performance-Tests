@@ -31,6 +31,7 @@ before:
     flow:
       - log: "Get auth token"
       - post:
+          name: "get_auth_token"
           url: "https://us-central1-wordboxdev.cloudfunctions.net/createcustomtoken"
           json:
             environment: "DEV"
@@ -43,6 +44,7 @@ scenarios:
   - name: "Get lessons by user id"
     flow:
       - get:
+          name: "get_lessons_by_user_id"
           url: "/apis/v1/lesson/lessonsbyuserid"
           qs:
             userid: "{{ userid }}"

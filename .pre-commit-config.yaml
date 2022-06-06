@@ -14,4 +14,30 @@ repos:
       - id: detect-private-key
       - id: mixed-line-ending
       - id: no-commit-to-branch
-        args: [--branch, develop]
+        args: [--branch, main]
+
+  # reorder Python imports
+  - repo: https://github.com/asottile/reorder_python_imports
+    rev: v2.6.0
+    hooks:
+      - id: reorder-python-imports
+
+  # format Python code with black
+  - repo: https://github.com/psf/black
+    rev: 22.3.0
+    hooks:
+      - id: black
+
+  # static type checking with mypy
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v0.910
+    hooks:
+      - id: mypy
+
+  # pycodestyle checking with flake8
+  - repo: https://github.com/PyCQA/flake8
+    rev: '3.9.2'
+    hooks:
+      - id: flake8
+        args: ['--ignore=E501, W503, E231, E203',
+                '--per-file-ignores=__init__.py:F401']
