@@ -1,0 +1,55 @@
+config:
+  environments:
+    develop:
+      target: "https://wordbox-gateway-9qeed9h4.uc.gateway.dev"
+      processor: "functions.js"
+      http:
+        timeout: 10
+        extendedMetrics: true
+  phases:
+    - name: Warm up
+      duration: 2
+      arrivalRate: 1
+    - name: Ramp up load
+      duration: 3
+      arrivalRate: 1
+      rampTo: 2
+  ensure:
+    thresholds:
+      - "http.response_time.p99": 4000
+      - "http.response_time.p95": 2000
+    conditions:
+      - expression: "http.request_rate > 5"
+    maxErrorRate: 1
+
+before:
+    flow:
+      - log: "Get auth token"
+      - post:
+          url: "https://us-central1-wordboxdev.cloudfunctions.net/createcustomtoken"
+          json:
+            environment: "DEV"
+          capture:
+            - json: $.idToken
+              as: token
+      - log: "token => {{ token }}"
+scenarios:
+  - name: "Create user"
+    flow:
+      - post:
+          url: "/apis/v1/facadecreateuseronboarding"
+          beforeRequest:
+            - "createRandomUser"
+            - "selectRandomInterests"
+          headers:
+            Accept: "application/json"
+            Authorization: "Bearer {{ token }}"
+          json:
+            user: "{{ userpayload }}"
+            unlockedinterests: "{{ unlockedInterests }}"
+            boxesinterests: "{{ boxesInterests }}"
+          capture:
+            json: "$"
+            as: "code"
+          strict: false
+      - log: "code => {{ code }} "

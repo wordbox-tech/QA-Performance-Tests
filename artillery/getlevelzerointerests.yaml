@@ -1,0 +1,38 @@
+processor: "./functions.js"
+config:
+  environments:
+    develop:
+      target: "https://wordbox-gateway-9qeed9h4.uc.gateway.dev"
+      http:
+        timeout: 5
+        #pool: 10
+        extendedMetrics: true
+      phases:
+        - name: Warm up
+          duration: 5
+          arrivalRate: 5
+        - name: Ramp to 50
+          duration: 60
+          arrivalRate: 5
+          rampTo: 10
+      ensure:
+        tresholds:
+        - "http.response_time.p99": 150
+        conditions:
+        - expression: "http.response_time.p95 < 250 and http.request_rate > 1000"
+        p95: 2000
+        maxErrorRate: 1
+
+
+scenarios:
+  - name: "Get level zero interests"
+    flow:
+      - get:
+          url: "/apis/v1/interest/levelzero"
+          headers:
+            Accept: "application/json"
+          capture:
+            json: "$[0].id"
+            as: "interestid"
+          strict: false
+      - log: "valores: => {{ interestid }}"
