@@ -43,18 +43,18 @@ before:
       - log: "token => {{ token }}"
 
 scenarios:
-  - name: "Get gems by user id"
+  - name: "Get interests in boxes by user id"
     flow:
       - get:
-          name: "get_gems_by_user_id"
-          url: "/apis/v1/gem"
+          name: "get_interests_in_boxes_by_user_id"
+          url: "/apis/v1/interest/boxes"
           qs:
             userid: "{{ userid }}"
           headers:
             Accept: "application/json"
             Authorization: "Bearer {{ token }}"
           capture:
-            json: "$.gems"
-            as: "gems"
+            json: "$.lastinterestname"
+            as: "lastinterestname"
           strict: false
-      - log: "gems => {{ gems }}"
+      - log: "lastinterestname => {{ lastinterestname }}"

@@ -14,5 +14,6 @@ def export_to_csv(file_name: str, field_names: List[str], data: List[Dict]):
             csv_file,
             fieldnames=field_names,
         )
+        writer.writeheader()
         for row in data:
             writer.writerow(row)

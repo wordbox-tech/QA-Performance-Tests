@@ -1,6 +1,9 @@
 from typing import Final
 
 from authorization_handler import firebase_auth_module
+from common_constants import USER_ID_ALIAS
+from common_constants import USER_RANK_ALIAS
+from common_constants import USERS_COLLECTION
 from csv_utils import export_to_csv
 from dotenv import load_dotenv
 from firestore_utils import get_collection
@@ -9,10 +12,6 @@ from providers import get_sync_firestore_auth_module
 
 
 CSV_FILE_NAME: Final[str] = "./artillery/users.csv"
-USERS_COLLECTION: Final = "Users"
-USER_ID_ALIAS: Final[str] = "id"
-USER_RANK_ALIAS: Final[str] = "rank"
-
 
 load_dotenv()
 firebase_auth_module()
