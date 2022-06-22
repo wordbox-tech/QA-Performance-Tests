@@ -4,4 +4,3 @@ __pycache__/
 .env
 result.json
 result.html
-.DS_Store

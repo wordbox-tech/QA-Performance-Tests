@@ -11,6 +11,8 @@ config:
         path: "userids.csv"
         fields:
           - "userid"
+        order: sequence
+        skipHeader: true
   phases:
     - name: Warm up
       duration: 5

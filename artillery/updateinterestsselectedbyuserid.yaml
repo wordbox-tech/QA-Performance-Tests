@@ -1,6 +1,8 @@
 config:
   plugins:
     ensure: {}
+    metrics-by-endpoint:
+      useOnlyRequestNames: true
   environments:
     develop:
       target: "https://wordbox-gateway-9qeed9h4.uc.gateway.dev"
@@ -23,8 +25,8 @@ config:
       rampTo: 10
   ensure:
     thresholds:
-      - "http.response_time.p99": 4000
-      - "http.response_time.p95": 2000
+      - "http.response_time.p99": 10000
+      - "http.response_time.p95": 5000
     conditions:
       - expression: "http.request_rate > 5"
     maxErrorRate: 1
@@ -43,18 +45,34 @@ before:
       - log: "token => {{ token }}"
 
 scenarios:
-  - name: "Get gems by user id"
+  - name: "Update interests selected by user id"
     flow:
       - get:
-          name: "get_gems_by_user_id"
-          url: "/apis/v1/gem"
+          name: "get_unlocked_interests_by_user_id"
+          url: "/apis/v1/interest/unlocked"
           qs:
             userid: "{{ userid }}"
           headers:
             Accept: "application/json"
             Authorization: "Bearer {{ token }}"
           capture:
-            json: "$.gems"
-            as: "gems"
+            - json: "$.items[0]"
+              as: "interest1"
           strict: false
-      - log: "gems => {{ gems }}"
+      - log: "interest1 => {{ interest1 }}"
+      - put:
+          name: "update_interests_selected_by_user_id"
+          url: "/apis/v1/interest/selected"
+          headers:
+            Accept: "application/json"
+            Authorization: "Bearer {{ token }}"
+          json:
+            userid: "{{ userid }}"
+            interestselected:
+              - interestid: "{{ interest1.id }}"
+                selected: true
+          capture:
+            - json: "$.successful"
+              as: "successful"
+          strict: false
+      - log: "successful => {{ successful }}"

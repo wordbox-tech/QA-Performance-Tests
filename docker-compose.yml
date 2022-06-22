@@ -1,0 +1,10 @@
+version: '3'
+services:
+  firestore-emulator:
+    image: mtlynch/firestore-emulator:latest
+    container_name: firestore-emulator
+    environment:
+      - FIRESTORE_PROJECT_ID=emulator
+      - PORT=8200
+    ports:
+      - 8200:8200

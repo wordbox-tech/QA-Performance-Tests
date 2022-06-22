@@ -8,9 +8,9 @@ config:
         timeout: 10
         extendedMetrics: true
       payload:
-        path: "users.csv"
+        path: "levels.csv"
         fields:
-          - "userid"
+          - "currentlevel"
         order: sequence
         skipHeader: true
   phases:
@@ -23,7 +23,7 @@ config:
       rampTo: 10
   ensure:
     thresholds:
-      - "http.response_time.p99": 4000
+      - "http.response_time.p99": 5000
       - "http.response_time.p95": 2000
     conditions:
       - expression: "http.request_rate > 5"
@@ -43,18 +43,18 @@ before:
       - log: "token => {{ token }}"
 
 scenarios:
-  - name: "Get gems by user id"
+  - name: "Get interets per level"
     flow:
       - get:
-          name: "get_gems_by_user_id"
-          url: "/apis/v1/gem"
+          name: "get_interests_per_level"
+          url: "/apis/v1/interest/levels"
           qs:
-            userid: "{{ userid }}"
+            currentlevel: "{{ currentlevel }}"
           headers:
             Accept: "application/json"
             Authorization: "Bearer {{ token }}"
           capture:
-            json: "$.gems"
-            as: "gems"
+            json: "$[0].level"
+            as: "level"
           strict: false
-      - log: "gems => {{ gems }}"
+      - log: "level => {{ level }}"
