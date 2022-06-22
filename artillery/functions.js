@@ -28,6 +28,12 @@ exports.createRandomUser = (req, context, events, next) => {
     return next();
 }
 
+exports.getCurrentDate = (req, context, events, next) => {
+    const currentdate = moment().format("DD/MM/YYYY");
+    context.vars.currentdate = currentdate;
+    return next();
+}
+
 exports.selectRandomInterests = (req, context, events, next) => {
     context.vars.unlockedInterests = unlockedInterests;
     context.vars.boxesInterests = levelzerointerests;
