@@ -62,7 +62,7 @@ scenarios:
     flow:
       - post:
           url: "/apis/v1/facadecreatequestions"
-          headers: 
+          headers:
             Accept: "application/json"
             Authorization: "Bearer {{ token }}"
           json:

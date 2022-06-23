@@ -47,9 +47,9 @@ scenarios:
     flow:
       - post:
           url: "/apis/v1/userstreak/streaksbyuser"
-          beforeRequest: 
+          beforeRequest:
             - "getCurrentDate"
-          headers: 
+          headers:
             Accept: "application/json"
             Authorization: "Bearer {{ token }}"
           json:
