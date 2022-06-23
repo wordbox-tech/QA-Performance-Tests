@@ -1,22 +1,29 @@
 config:
+  plugins:
+    ensure: {}
   environments:
     develop:
       target: "https://wordbox-gateway-9qeed9h4.uc.gateway.dev"
-      processor: "functions.js"
       http:
         timeout: 10
         extendedMetrics: true
+      payload:
+        path: "levels.csv"
+        fields:
+          - "currentlevel"
+        order: sequence
+        skipHeader: true
   phases:
     - name: Warm up
-      duration: 2
-      arrivalRate: 1
+      duration: 5
+      arrivalRate: 5
     - name: Ramp up load
-      duration: 3
-      arrivalRate: 1
-      rampTo: 2
+      duration: 60
+      arrivalRate: 5
+      rampTo: 10
   ensure:
     thresholds:
-      - "http.response_time.p99": 4000
+      - "http.response_time.p99": 5000
       - "http.response_time.p95": 2000
     conditions:
       - expression: "http.request_rate > 5"
@@ -26,6 +33,7 @@ before:
     flow:
       - log: "Get auth token"
       - post:
+          name: "get_auth_token"
           url: "https://us-central1-wordboxdev.cloudfunctions.net/createcustomtoken"
           json:
             environment: "DEV"
@@ -33,30 +41,20 @@ before:
             - json: $.idToken
               as: token
       - log: "token => {{ token }}"
+
 scenarios:
-  - name: "Create user"
+  - name: "Get interets per level"
     flow:
-      - post:
-          url: "/apis/v1/facadecreateuseronboarding"
-          beforeRequest:
-            - "createRandomUser"
-            - "selectRandomInterests"
+      - get:
+          name: "get_interests_per_level"
+          url: "/apis/v1/interest/levels"
+          qs:
+            currentlevel: "{{ currentlevel }}"
           headers:
             Accept: "application/json"
             Authorization: "Bearer {{ token }}"
-          json:
-            user: "{{ userpayload }}"
-            unlockedinterests: "{{ unlockedInterests }}"
-            boxesinterests: "{{ boxesInterests }}"
           capture:
-            json: "$"
-            as: "code"
+            json: "$[0].level"
+            as: "level"
           strict: false
-          expect:
-            - statusCode: 200
-            - contentType: json
-            - hasProperty: successful
-              equals:
-               - true
-               - "{{ successful }}"
-      - log: "code => {{ code }} "
+      - log: "level => {{ level }}"

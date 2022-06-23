@@ -1,1 +1,6 @@
-node_modules
+node_modules/
+__pycache__/
+.DS_Store
+.env
+result.json
+result.html

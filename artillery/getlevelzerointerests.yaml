@@ -7,7 +7,7 @@ config:
         timeout: 5
         #pool: 10
         extendedMetrics: true
-      phases: 
+      phases:
         - name: Warm up
           duration: 5
           arrivalRate: 5
@@ -16,7 +16,7 @@ config:
           arrivalRate: 5
           rampTo: 10
       ensure:
-        tresholds: 
+        tresholds:
         - "http.response_time.p99": 150
         conditions:
         - expression: "http.response_time.p95 < 250 and http.request_rate > 1000"
@@ -29,7 +29,7 @@ scenarios:
     flow:
       - get:
           url: "/apis/v1/interest/levelzero"
-          headers: 
+          headers:
             Accept: "application/json"
           capture:
             json: "$[0].id"

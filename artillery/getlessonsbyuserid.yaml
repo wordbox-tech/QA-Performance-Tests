@@ -1,0 +1,60 @@
+config:
+  plugins:
+    ensure: {}
+  environments:
+    develop:
+      target: "https://lesson-gateway-9qeed9h4.uc.gateway.dev"
+      http:
+        timeout: 10
+        extendedMetrics: true
+      payload:
+        path: "userids.csv"
+        fields:
+          - "userid"
+        order: sequence
+        skipHeader: true
+  phases:
+    - name: Warm up
+      duration: 5
+      arrivalRate: 5
+    - name: Ramp up load
+      duration: 60
+      arrivalRate: 5
+      rampTo: 10
+  ensure:
+    thresholds:
+      - "http.response_time.p99": 5000
+      - "http.response_time.p95": 3000
+    conditions:
+      - expression: "http.request_rate > 5"
+    maxErrorRate: 1
+
+before:
+    flow:
+      - log: "Get auth token"
+      - post:
+          name: "get_auth_token"
+          url: "https://us-central1-wordboxdev.cloudfunctions.net/createcustomtoken"
+          json:
+            environment: "DEV"
+          capture:
+            - json: $.idToken
+              as: token
+      - log: "token => {{ token }}"
+
+scenarios:
+  - name: "Get lessons by user id"
+    flow:
+      - get:
+          name: "get_lessons_by_user_id"
+          url: "/apis/v1/lesson/lessonsbyuserid"
+          qs:
+            userid: "{{ userid }}"
+          headers:
+            Accept: "application/json"
+            Authorization: "Bearer {{ token }}"
+          capture:
+            json: "$.items"
+            as: "lessons"
+          strict: false
+      - log: "lessons => {{ lessons }}"
