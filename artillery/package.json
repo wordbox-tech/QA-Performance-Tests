@@ -1,5 +1,8 @@
 {
   "dependencies": {
     "moment": "^2.29.3"
+  },
+  "devDependencies": {
+    "pre-commit": "^1.2.2"
   }
 }

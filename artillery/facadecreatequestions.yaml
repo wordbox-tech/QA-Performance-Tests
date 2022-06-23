@@ -1,0 +1,81 @@
+config:
+  environments:
+    develop:
+      target: "https://questions-gateway-9qeed9h4.uc.gateway.dev"
+      processor: "functions.js"
+      http:
+        timeout: 20
+        extendedMetrics: true
+      payload:
+        path: "users.csv"
+        fields:
+          - "userid"
+          - "userrank"
+        order: sequence
+  plugins:
+    metrics-by-endpoint:
+      useOnlyRequestNames: true
+    #expect: {}
+  phases:
+    - duration: 2
+      arrivalRate: 1
+      name: Warm up
+    #- name: Ramp up load
+      #duration: 3
+      #arrivalRate: 1
+      #rampTo: 2
+  ensure:
+    thresholds:
+      - "http.response_time.p99": 4000
+      - "http.response_time.p95": 2000
+    conditions:
+      - expression: "http.request_rate > 5"
+    maxErrorRate: 1
+
+before:
+    flow:
+      - log: "Get auth token"
+      - post:
+          url: "https://us-central1-wordboxdev.cloudfunctions.net/createcustomtoken"
+          json:
+            environment: "DEV"
+          capture:
+            - json: $.idToken
+              as: token
+      - log: "token => {{ token }}"
+      - log: "Get current lesson by id"
+      - get:
+          url: "https://lesson-gateway-9qeed9h4.uc.gateway.dev/apis/v1/lesson/lessonsbyuserid"
+          qs:
+            userid: "{{ userid }}"
+          headers:
+            Accept: "application/json"
+            Authorization: "Bearer {{ token }}"
+          capture:
+            - json: "$.items[4].interestid"
+              as: "interestid"
+            - json: "$.items[4].words"
+              as: "userwords"
+      - log: "interestid and words=> {{ interestid }}, {{ userwords }}"
+scenarios:
+  - name: "Facade create questions"
+    flow:
+      - post:
+          url: "/apis/v1/facadecreatequestions"
+          headers:
+            Accept: "application/json"
+            Authorization: "Bearer {{ token }}"
+          json:
+            userid: "{{ userid }}"
+            lessontype: "LESSON"
+            interestid: "{{ interestid }}"
+            lemmas: "{{ userwords }}"
+            userrank: "{{ userrank }}"
+          capture:
+            json: "$.questions"
+            as: "code"
+          expect:
+            - statusCode: 200
+            - contentType: json
+            - hasProperty: questions
+      - log: "code => {{ code }} "
