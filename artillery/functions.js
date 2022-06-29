@@ -3,7 +3,7 @@ const moment = require('moment');
 let levelzerointerests = require('./interests.json');
 
 let unlockedInterests = [];
-for(let i=0 ; i < 6 ; i++){
+for(let i=0 ; i < 4 ; i++){
     var r = Math.floor(Math.random() * levelzerointerests.length);
     unlockedInterests.push(levelzerointerests[r]);
     levelzerointerests.splice(r, 1);
